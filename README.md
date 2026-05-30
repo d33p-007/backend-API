@@ -1,4 +1,4 @@
-CIS 410 — Capstone Frontend
+CIS 410 — Capstone BackendAPI
 
 Expected result after terraform apply
 
