@@ -1,0 +1,108 @@
+# .github/workflows/terraform-plan.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# Terraform Plan workflow — Week 7
+#
+# Triggers on every push that changes files in terraform/week7/.
+# Authenticates to GCP via OIDC — no service account key is stored anywhere.
+#
+# What this workflow does:
+#   1. Checks out the repository code
+#   2. Authenticates to GCP using a short-lived OIDC token
+#   3. Runs terraform init  — connects to the GCS remote backend
+#   4. Runs terraform validate  — checks HCL syntax
+#   5. Runs terraform plan  — shows what would change (does NOT apply)
+#
+# NOTE: This workflow only PLANS — it does not apply.
+# Students run terraform apply locally after reviewing the plan.
+# Automated apply (with -auto-approve) is introduced in Week 8.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Terraform Plan
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "terraform/week7/**"   # only triggers when week7 files change
+  workflow_dispatch:            # also allow manual trigger from GitHub UI
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    name: Plan VPC Infrastructure
+
+    # ── OIDC Permissions ─────────────────────────────────────────────────────
+    # id-token: write  is REQUIRED for OIDC authentication.
+    # Without this, GitHub will not generate an OIDC token and the
+    # "Authenticate to GCP" step will fail with "No access token was found."
+    #
+    # contents: read  allows actions/checkout to read the repository.
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      # ── Step 1: Checkout ───────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Step 2: OIDC Authentication ────────────────────────────────────────
+      # This step exchanges GitHub's OIDC token for a GCP access token.
+      # No credentials are stored — the token is valid only for this job run.
+      #
+      # workload_identity_provider: the Workload Identity Provider you created
+      #   in Activity 1 (stored as a GitHub Variable, not a Secret).
+      # service_account: the service account the workflow impersonates
+      #   (stored as a GitHub Variable, not a Secret).
+      #
+      # After this step, all subsequent gcloud and Terraform commands
+      # automatically use these temporary credentials.
+      - name: Authenticate to GCP via OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.SA_EMAIL }}
+
+      # ── Step 3: Setup Terraform ────────────────────────────────────────────
+      # Installs Terraform on the runner at the pinned version.
+      # Pinning the version ensures reproducible pipeline behavior.
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      # ── Step 4: Terraform Init ─────────────────────────────────────────────
+      # Initializes the working directory:
+      #   - Downloads the Google provider plugin
+      #   - Initializes the modules/networking/ child module
+      #   - Connects to the GCS remote backend (reads/writes state from GCS)
+      #
+      # working-directory tells the step where to run the command.
+      # All subsequent Terraform steps use the same directory.
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform/week7
+
+      # ── Step 5: Terraform Validate ─────────────────────────────────────────
+      # Checks HCL syntax and configuration consistency.
+      # Does not call GCP APIs — purely local validation.
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: terraform/week7
+
+      # ── Step 6: Terraform Plan ─────────────────────────────────────────────
+      # Compares the code against the state file and shows what would change.
+      # -no-color removes ANSI color codes so the output is readable in logs.
+      #
+      # TF_VAR_ environment variables pass Terraform input variables:
+      #   TF_VAR_project_id  → var.project_id in variables.tf
+      #   TF_VAR_my_ip_cidr  → var.my_ip_cidr in variables.tf
+      #
+      # These are stored as GitHub Variables (not Secrets) because they are
+      # resource identifiers, not credentials.
+      - name: Terraform Plan
+        run: terraform plan -no-color
+        working-directory: terraform/week7
+        env:
+          TF_VAR_project_id: ${{ vars.TF_VAR_PROJECT_ID }}
+          TF_VAR_my_ip_cidr: ${{ vars.TF_VAR_MY_IP_CIDR }}
