@@ -21,10 +21,10 @@ name: Terraform Plan
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - "terraform/week7/**"   # only triggers when week7 files change
-  workflow_dispatch:            # also allow manual trigger from GitHub UI
+      - "terraform/week7/**" # only triggers when week7 files change
+  workflow_dispatch: # also allow manual trigger from GitHub UI
 
 jobs:
   terraform-plan:
