@@ -1,3 +1,3 @@
-# Link to task Assignments to each team member
+# Task Assignment
 
 - https://github.com/users/d33p-007/projects/2
