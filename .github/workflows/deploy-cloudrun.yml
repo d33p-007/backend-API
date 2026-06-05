@@ -6,63 +6,55 @@
 
 # and deploy to Cloud Run. Manual trigger — same promotion gate as
 
-# the on-premise deploy-staging.yml and deploy-prod.yml from Week 4.
+# the on-premise deploy-staging.yml and deploy-prod.yml
 
 # ─────────────────────────────────────────────────────────────────────────
 
-name: Deploy to Cloud Run
+name: Deploy to GCP
 
 on:
   workflow_dispatch: # manual trigger — intentional promotion gate
 
 env:
-  REGION: us-central1
+  REGION: us-west1
 
-  REGISTRY: us-central1-docker.pkg.dev
+  REGISTRY: us-west1-docker.pkg.dev
 
-  REPO: cis410-app
+  REPO: cis410-capstone-app
 
-  IMAGE: flask-app
+  IMAGE: flask-app-backend-API
 
-  SERVICE: cis410-flask-app
+  SERVICE: cis410-flask-app-capstone-backend-API
 
 jobs:
-  build-push-deploy:
+  # 1. BUILD and PUSH STAGE
+  build-and-push:
     runs-on: ubuntu-latest
-
+    # REQUIRED: This permission allows requesting the OIDC JWT token
     permissions:
       contents: read
-
       id-token: write # required for OIDC
-
     steps:
+      # Checkout repository source code
       - name: Checkout code
-
         uses: actions/checkout@v4
 
-      # OIDC replaces the SSH key secret from on-premise workflows
-
+      # OIDC Authenticate
       - name: Authenticate to GCP via OIDC
-
+        id: auth
         uses: google-github-actions/auth@v2
-
         with:
           workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-
           service_account: ${{ vars.SA_EMAIL }}
 
       - name: Set up Cloud SDK
-
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-        run: gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
-
-      # Build and tag with commit SHA — never :latest
-
-      - name: Build and push image
-
+      # Build and Push container to Artifact Registry
+      - name: Build and Push Container
         run: |
 
           PROJECT_ID=$(gcloud config get-value project)
@@ -75,16 +67,16 @@ jobs:
 
           echo "IMAGE_PATH=${IMAGE_PATH}" >> $GITHUB_ENV
 
-      # Deploy — mirrors "docker run" from on-premise weeks
-
+      # Deploy the image to Google Cloud Run
       - name: Deploy to Cloud Run
-
+        id: deploy
         run: |
 
-          gcloud run deploy ${SERVICE} --image ${IMAGE_PATH} --region ${REGION} --platform managed --allow-unauthenticated --max-instances 3 --quiet
+          gcloud run deploy ${{ env.SERVICE }} --image ${IMAGE_PATH} --region ${{ env.REGION }} --platform managed --allow-unauthenticated --max-instances 3 --quiet
 
-      - name: Print service URL
-
+      # Output the live URL for validation
+      - name: Show Live URL
         run: |
 
+          echo "Application deployed successfully! URL is - "
           gcloud run services describe ${SERVICE} --region ${REGION} --format "value(status.url)"
