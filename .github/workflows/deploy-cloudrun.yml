@@ -91,7 +91,7 @@ jobs:
 
           PROJECT_ID=$(gcloud config get-value project)
 
-          IMAGE_PATH=${REGISTRY}/${PROJECT_ID}/${REPO}/${IMAGE}:${{ github.sha }}
+          #IMAGE_PATH=${REGISTRY}/${PROJECT_ID}/${REPO}/${IMAGE}:${{ github.sha }}
 
           docker push ${IMAGE_PATH}
 
