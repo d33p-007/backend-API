@@ -96,6 +96,8 @@ jobs:
       - name: Push Container
         run: |
 
+          docker build -t ${{ needs.build.outputs.image_path_global }} .
+
           docker push ${{ needs.build.outputs.image_path_global }}
 
           echo "IMAGE_PATH=${{ needs.build.outputs.image_path_global }}" >> $GITHUB_ENV
