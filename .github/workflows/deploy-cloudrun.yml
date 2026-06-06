@@ -22,13 +22,13 @@ env:
 
   REPO: cis410-capstone-app
 
-  IMAGE: flask-app-backendAPI
+  IMAGE: flask-app-backend-api
 
-  SERVICE: cis410-flask-app-capstone-backendAPI
+  SERVICE: cis410-flask-app-capstone-backend-api
 
 jobs:
   # 1. Build Image
-  build-image:
+  build:
     runs-on: ubuntu-latest
     # REQUIRED: This permission allows requesting the OIDC JWT token
     permissions:
@@ -63,8 +63,9 @@ jobs:
           echo "IMAGE_PATH=${IMAGE_PATH}" >> $GITHUB_ENV
 
   # 1. Push Image
-  push-image:
+  deploy:
     runs-on: ubuntu-latest
+    needs: build
     # REQUIRED: This permission allows requesting the OIDC JWT token
     permissions:
       contents: read
