@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image_path_output: ${{ steps.buildc.outputs.IMAGE_PATH }}
+      image_path_global: ${{ steps.buildc.outputs.image_path_output }}
     # REQUIRED: This permission allows requesting the OIDC JWT token
     permissions:
       contents: read
@@ -55,6 +55,8 @@ jobs:
       # Build and Push container to Artifact Registry
       - name: Build Container
         id: buildc
+        env:
+          buildc: ${IMAGE_PATH}
         run: |
 
           PROJECT_ID=$(gcloud config get-value project)
@@ -62,6 +64,8 @@ jobs:
           IMAGE_PATH=${REGISTRY}/${PROJECT_ID}/${REPO}/${IMAGE}:${{ github.sha }}
 
           docker build -t ${IMAGE_PATH} .
+
+          echo "image_path_output=${IMAGE_PATH}" >> "$GITHUB_OUTPUT"
 
           echo "IMAGE_PATH=${IMAGE_PATH}" >> $GITHUB_ENV
 
@@ -92,11 +96,9 @@ jobs:
       - name: Push Container
         run: |
 
-          PROJECT_ID=$(gcloud config get-value project)
+          docker push ${{ needs.build.outputs.image_path_global }}
 
-          docker push ${{ needs.build.outputs.image_path_output }}
-
-          echo "IMAGE_PATH=${{ needs.build.outputs.image_path_output }}" >> $GITHUB_ENV
+          echo "IMAGE_PATH=${{ needs.build.outputs.image_path_global }}" >> $GITHUB_ENV
 
       # Deploy the image to Google Cloud Run
       - name: Deploy to Cloud Run
