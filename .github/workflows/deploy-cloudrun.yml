@@ -71,10 +71,6 @@ jobs:
       contents: read
       id-token: write # required for OIDC
     steps:
-      # Checkout repository source code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       # OIDC Authenticate
       - name: Authenticate to GCP via OIDC
         id: auth
