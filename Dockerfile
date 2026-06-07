@@ -1,32 +1,36 @@
-# ── Stage 1: build dependencies ──────────────────────────────────────────────
-FROM python:3.12-slim AS builder
+# Dockerfile  —  CorpDirectory SECURE (Week 5)
+# ─────────────────────────────────────────────────────────────────────────────
+# FIXES from Dockerfile.vulnerable:
+#
+#   1. FROM python:3.11-slim        ← pinned slim image (reduces attack surface + CVEs)
+#      was: FROM python:3.11        ← full image, hundreds of extra packages
+#
+#   2. Deps layer BEFORE source     ← correct cache ordering
+#      COPY requirements.txt first, pip install, THEN copy app source
+#      was: COPY . . first          ← every code change invalidates the dep cache
+#
+#   3. Non-root user                ← container does not run as root
+#      RUN adduser --disabled-password appuser
+#      USER appuser
+#      was: no USER instruction     ← process ran as root inside the container
+# ─────────────────────────────────────────────────────────────────────────────
 
-WORKDIR /build
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
-
-
-# ── Stage 2: runtime image ────────────────────────────────────────────────────
-FROM python:3.12-slim AS runtime
-
-RUN groupadd -r purevibe && useradd -r -g purevibe purevibe
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY --from=builder /install /usr/local
+# Install dependencies first — this layer is cached unless requirements.txt changes
+COPY app/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ ./app/
-COPY run.py .
+# Copy application source after dependencies
+COPY app/ .
 
-ENV PORT=8080
+# Create a non-root user and switch to it
+# Security: if the container is compromised, the attacker has no root privileges
+RUN adduser --disabled-password --gecos "" appuser
+USER appuser
 
-USER purevibe
+EXPOSE 5000
 
-EXPOSE 8080
-
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--threads", "4", "--timeout", "60", "run:app"]
+CMD ["python", "app.py"]
