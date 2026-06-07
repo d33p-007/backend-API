@@ -1,6 +1,0 @@
-project_id       = "cis-410-capstone"
-region           = "us-central1"
-vpc_name         = "cis410-capstone-vpc"
-db_password      = "PureVibe2026!"
-flask_secret_key = "5af264dd8c3dec75dc93b4443acc397978d740836dca011b69fc14acfa278997"
-jwt_secret_key   = "7edc858e529a6b661813e7649531e127189e290032ff24553933479b2c7289bd"
