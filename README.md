@@ -1,4 +1,4 @@
-CIS 410 — Capstone BackendAPI
+CIS 410 — Capstone Frontend
 
 Expected result after terraform apply
 
@@ -34,10 +34,10 @@ terraform destroy # type yes
 terraform apply   # recreate — Destroy and Rebuild principle
 
 # 4. Commit (NOT tfvars or tfstate)
-git add terraform/week6/main.tf
-git add terraform/week6/variables.tf
-git add terraform/week6/outputs.tf
-git add terraform/week6/.terraform.lock.hcl
+git add terraform/app/main.tf
+git add terraform/app/variables.tf
+git add terraform/app/outputs.tf
+git add terraform/app/.terraform.lock.hcl
 git commit -m "Week 1: GCS buckets — tfstate + logs"
 git push origin main
 ```
@@ -60,18 +60,22 @@ Pipeline status: [![Hello Pipeline](https://github.com/d33p-007/cis-410-cybersec
 
 ## Company Name
 
-- **Name:** --
-
--
+- PureVibe Wellness --
 
 ## App Description
 
-This repository is Capstone
+#-- Users can register/log in and create their profile. They can look for a healthy diet plan for themselves and their family members. Users can also learn about fitness exercises they can do at home, such as yoga or stretching.
+
 
 ## Team Members & Roles
 
--
-
--
-
-## Fun Fact
+-#-- Project Lead - Pawan Mehra
+GitHub Username: d33p-007
+#-- Backend Engineer - Tre Crowley
+GitHub Username: trecrowley
+#-- Frontend Engineer - Ruweda Hassan
+GitHub Username: Ruru489
+#-- DevSecOps Engineer - Seth Richardson
+GitHub Username: Srichardson00
+#-- Security Reviewer - Wesley Ngem
+GitHub Username: cyberwes69
