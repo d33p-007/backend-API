@@ -1,6 +1,6 @@
-# terraform/week7/main.tf
+# terraform/intrastructure/main.tf
 # ─────────────────────────────────────────────────────────────────────────────
-# Root module for Week 7.
+# Root module for foundational Infrastructure
 #
 # This file does two things:
 #   1. Configures the GCS remote backend so state is stored in GCP,
@@ -32,8 +32,8 @@ terraform {
   # REPLACE: change cis410-yourname-xxxx-tfstate to your actual bucket name.
   # Find it: GCP Console → Cloud Storage → Buckets
   backend "gcs" {
-    bucket = "cis410-yourname-xxxx-tfstate" # ← replace with your bucket name
-    prefix = "terraform/week7"
+    bucket = "cis-410-capstone-tfstate" # ← replace with your bucket name
+    prefix = "terraform/infrastructure"
   }
 
   required_providers {
@@ -42,6 +42,10 @@ terraform {
       version = "~> 5.0"
       # ~> 5.0 means: use any 5.x version, but not 6.0+
       # This prevents breaking changes from major version upgrades.
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
     }
   }
 }
@@ -78,7 +82,14 @@ module "networking" {
 
   project_id  = var.project_id
   region      = var.region
-  vpc_name    = "cis410-vpc"   # VPC will be named "cis410-vpc" in GCP
-  subnet_cidr = "10.0.1.0/24"  # 256 addresses for application workloads
-  my_ip_cidr  = var.my_ip_cidr # your IP — set in terraform.tfvars
+  vpc_name    = "cis410-capstone-vpc" # VPC will be named "cis410-vpc" in GCP
+  subnet_cidr = "10.0.1.0/24"         # 256 addresses for application workloads
+  my_ip_cidr  = var.my_ip_cidr        # your IP — set in terraform.tfvars
+}
+
+# Automatically enable the Service Networking API inside the project
+resource "google_project_service" "service_networking" {
+  project            = var.project_id
+  service            = "servicenetworking.googleapis.com"
+  disable_on_destroy = false # Keeps the API active if you destroy specific resources
 }
