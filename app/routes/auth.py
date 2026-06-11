@@ -5,17 +5,15 @@ from ..models.models import User, FamilyMember
 
 auth_bp = Blueprint("auth", __name__)
 
-
 @auth_bp.post("/register")
 def register():
+    print(">>> REGISTER API called")
     data = request.get_json()
     required = ["email", "password", "full_name"]
     if not all(k in data for k in required):
         return jsonify({"error": "email, password, and full_name are required"}), 400
-
     if User.query.filter_by(email=data["email"]).first():
         return jsonify({"error": "Email already registered"}), 409
-
     password_hash = bcrypt.generate_password_hash(data["password"]).decode("utf-8")
     user = User(
         email=data["email"],
@@ -26,36 +24,36 @@ def register():
     )
     db.session.add(user)
     db.session.commit()
-
+    print(f">>> User registered successfully: {user.email}")
     token = create_access_token(identity=str(user.id))
     return jsonify({"user": user.to_dict(), "access_token": token}), 201
 
-
 @auth_bp.post("/login")
 def login():
+    print(">>> LOGIN API called")
     data = request.get_json()
     if not data or not data.get("email") or not data.get("password"):
         return jsonify({"error": "email and password are required"}), 400
-
     user = User.query.filter_by(email=data["email"]).first()
     if not user or not bcrypt.check_password_hash(user.password_hash, data["password"]):
+        print(">>> LOGIN failed - invalid credentials")
         return jsonify({"error": "Invalid credentials"}), 401
-
+    print(f">>> User logged in successfully: {user.email}")
     token = create_access_token(identity=str(user.id))
     return jsonify({"user": user.to_dict(), "access_token": token}), 200
-
 
 @auth_bp.get("/me")
 @jwt_required()
 def me():
+    print(">>> GET PROFILE API called")
     user_id = get_jwt_identity()
     user = User.query.get_or_404(int(user_id))
     return jsonify(user.to_dict()), 200
 
-
 @auth_bp.put("/me")
 @jwt_required()
 def update_profile():
+    print(">>> UPDATE PROFILE API called")
     user_id = get_jwt_identity()
     user = User.query.get_or_404(int(user_id))
     data = request.get_json()
@@ -64,23 +62,22 @@ def update_profile():
     db.session.commit()
     return jsonify(user.to_dict()), 200
 
-
 @auth_bp.get("/me/family")
 @jwt_required()
 def list_family():
+    print(">>> LIST FAMILY API called")
     user_id = get_jwt_identity()
     user = User.query.get_or_404(int(user_id))
     return jsonify([m.to_dict() for m in user.family_members]), 200
 
-
 @auth_bp.post("/me/family")
 @jwt_required()
 def add_family():
+    print(">>> ADD FAMILY MEMBER API called")
     user_id = get_jwt_identity()
     data = request.get_json()
     if not data.get("name") or not data.get("age"):
         return jsonify({"error": "name and age are required"}), 400
-
     member = FamilyMember(
         user_id=int(user_id),
         name=data["name"],
@@ -91,10 +88,10 @@ def add_family():
     db.session.commit()
     return jsonify(member.to_dict()), 201
 
-
 @auth_bp.delete("/me/family/<int:member_id>")
 @jwt_required()
 def delete_family(member_id):
+    print(">>> DELETE FAMILY MEMBER API called")
     user_id = get_jwt_identity()
     member = FamilyMember.query.filter_by(id=member_id, user_id=int(user_id)).first_or_404()
     db.session.delete(member)
