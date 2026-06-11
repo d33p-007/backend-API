@@ -58,24 +58,37 @@ Runner IP: 192.168.1.131 #fake ip
 
 Pipeline status: [![Hello Pipeline](https://github.com/d33p-007/cis-410-cybersecurity-automation/actions/workflows/hello-pipeline.yml/badge.svg)](https://github.com/d33p-007/cis-410-cybersecurity-automation/actions/workflows/hello-pipeline.yml)
 
+
 ## Company Name
 
-- PureVibe Wellness --
+PureVibe Wellness
+
+---
 
 ## App Description
 
-#-- Users can register/log in and create their profile. They can look for a healthy diet plan for themselves and their family members. Users can also learn about fitness exercises they can do at home, such as yoga or stretching.
+Users can register and log in to create their profiles. They can browse healthy diet plans for themselves and their family members. Users can also learn fitness exercises they can perform at home, including yoga, stretching, and other wellness activities.
 
+---
 
 ## Team Members & Roles
 
--#-- Project Lead - Pawan Mehra
-GitHub Username: d33p-007
-#-- Backend Engineer - Tre Crowley
-GitHub Username: trecrowley
-#-- Frontend Engineer - Ruweda Hassan
-GitHub Username: Ruru489
-#-- DevSecOps Engineer - Seth Richardson
-GitHub Username: Srichardson00
-#-- Security Reviewer - Wesley Ngem
-GitHub Username: cyberwes69
+### Project Lead
+**Pawan Mehra**  
+GitHub Username: `d33p-007`
+
+### Backend Engineer
+**Tre Crowley**  
+GitHub Username: `trecrowley`
+
+### Frontend Engineer
+**Ruweda Hassan**  
+GitHub Username: `Ruru489`
+
+### DevSecOps Engineer
+**Seth Richardson**  
+GitHub Username: `Srichardson00`
+
+### Security Reviewer
+**Wesley Ngem**  
+GitHub Username: `cyberwes69`
